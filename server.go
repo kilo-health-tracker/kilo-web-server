@@ -29,8 +29,9 @@ func main() {
 	e.DELETE("/workout/:name/:date", handler.DeleteWorkoutPerformed)
 
 	//// Program
-	e.GET("/exercise", handler.GetProgramNames)
-	e.GET("/exercise/:name", handler.GetProgram)
+	e.POST("/program", handler.CreateProgram)
+	e.GET("/program", handler.GetProgramNames)
+	e.GET("/program/:name", handler.GetProgram)
 
 	//// Composition
 	e.POST("/composition", handler.SubmitComposition)

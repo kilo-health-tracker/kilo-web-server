@@ -6,11 +6,13 @@ import (
 	"log"
 	"net/http"
 	"strconv"
+	"database/sql"
 
 	"github.com/labstack/echo/v4"
 	_ "github.com/lib/pq"
 
 	"github.com/kilo-health-tracker/kilo-database/utils"
+	"github.com/kilo-health-tracker/kilo-database/models"
 )
 
 // Get Program
@@ -78,4 +80,97 @@ func DeleteProgram(c echo.Context) error {
 	}
 
 	return c.JSON(http.StatusOK, GenericResponse{fmt.Sprintf("Successfully deleted Program: %s", name)})
+}
+
+type Exercise struct {
+	Name string `json:"name"`
+	GroupId int16 `json:"group_id"`
+	Sets int16 `json:"sets"`
+	Reps int16 `json:"reps"`
+	Weight int16 `json:"weight"`
+}
+
+type Workout struct {
+	Name string `json:"name"`
+	Exercises []Exercise `json:"exercises"`
+}
+
+type Program struct {
+	Name string `json:"name"`
+	Workouts []Workout `json:"workouts"`
+}
+
+
+func CreateProgram(c echo.Context) error {
+	var requestBody Program
+	queries, err := utils.GetQueryInterface()
+	if err != nil {
+		log.Fatal(err)
+		return c.JSON(http.StatusInternalServerError, GenericResponse{fmt.Sprintf("Failed to establish connection to postgres: %s", err)})
+	}
+
+	// bind request body to variable given
+	if err := c.Bind(&requestBody); err != nil {
+		return c.JSON(http.StatusInternalServerError, GenericResponse{fmt.Sprintf("Failed to bind request body to composition type: %s", err)})
+	}
+
+	ctx := context.Background()
+
+	log.Println(requestBody)
+	programName := requestBody.Name
+	fmt.Printf("Inserting program: %s\n", programName)
+
+	response, err := queries.SubmitProgram(ctx, programName)
+	if err != nil {
+		log.Fatal(err)
+		return c.JSON(http.StatusInternalServerError, GenericResponse{fmt.Sprintf("Failed to submit program: %s", err)})
+	}
+	log.Println(response)
+
+	for _, workout := range requestBody.Workouts {
+		workoutParams := models.SubmitWorkoutParams{
+			Name:        workout.Name,
+			ProgramName: programName,
+		}
+		log.Println(workoutParams)
+
+		log.Println("Submitting Workout...")
+		_, err := queries.SubmitWorkout(ctx, workoutParams)
+		if err != nil {
+			log.Fatal(err)
+			return c.JSON(http.StatusInternalServerError, GenericResponse{fmt.Sprintf("Failed to submit program: %s", err)})
+		}
+
+		programWorkoutLink := models.SubmitProgramDetailsParams{
+			ProgramName: programName,
+			WorkoutName: workout.Name,
+		}
+
+		log.Println("Submitting program details...")
+		_, err2 := queries.SubmitProgramDetails(ctx, programWorkoutLink)
+		if err2 != nil {
+			log.Fatal(err2)
+			return c.JSON(http.StatusInternalServerError, GenericResponse{fmt.Sprintf("Failed to submit program: %s", err2)})
+		}
+
+		log.Println("Submitting workout details...")
+		for _, exercise := range workout.Exercises {
+			details := models.SubmitWorkoutDetailsParams {
+				WorkoutName:  workout.Name,
+				GroupID:      exercise.GroupId,
+				ExerciseName: exercise.Name,
+				Sets:         exercise.Sets,
+				Reps:         exercise.Reps,
+				Weight:       sql.NullInt16{Int16: exercise.Weight, Valid: true},
+			}
+			log.Println(details)
+			_, err := queries.SubmitWorkoutDetails(ctx, details)
+			if err != nil {
+				log.Fatal(err)
+				return c.JSON(http.StatusInternalServerError, GenericResponse{fmt.Sprintf("Failed to submit program: %s", err)})
+			}
+		}
+	}
+
+	return c.JSON(http.StatusOK, GenericResponse{fmt.Sprintf("Successfully created Program: %s", programName)})
 }
