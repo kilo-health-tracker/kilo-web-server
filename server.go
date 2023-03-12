@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 
@@ -9,40 +10,51 @@ import (
 
 func main() {
 	// Echo instance
-	e := echo.New()
+	server := echo.New()
 
 	// Middleware
-	e.Use(middleware.Logger())
-	e.Use(middleware.Recover())
+	server.Use(
+		middleware.Logger(),
+		middleware.Recover(),
+		middleware.RequestID(),
+	)
+
+	server.HTTPErrorHandler = func(err error, c echo.Context) {
+		// Take required information from error and context and send it to a service like New Relic
+		fmt.Println(c.Path(), c.QueryParams(), err.Error())
+
+		// Call the default handler to return the HTTP response
+		server.DefaultHTTPErrorHandler(err, c)
+	}
 
 	// Route => handler
 	//// Exercise
-	e.GET("/exercise", handler.GetExerciseNames)
-	e.GET("/exercise/:name", handler.GetExercise)
-	e.DELETE("/exercise/:name", handler.DeleteExercise)
+	server.GET("/exercise", handler.GetExerciseNames)
+	server.GET("/exercise/:name", handler.GetExercise)
+	server.DELETE("/exercise/:name", handler.DeleteExercise)
 
 	//// Workout
-	e.GET("/workout", handler.GetWorkoutNames)
-	e.DELETE("/workout/:name", handler.DeleteWorkout)
-	e.GET("/workout/:name", handler.GetWorkout)
-	e.GET("/workout/:name/:date", handler.GetWorkoutPerformed)
-	e.DELETE("/workout/:name/:date", handler.DeleteWorkoutPerformed)
+	server.GET("/workout", handler.GetWorkoutNames)
+	server.DELETE("/workout/:name", handler.DeleteWorkout)
+	server.GET("/workout/:name", handler.GetWorkout)
+	server.GET("/workout/:name/:date", handler.GetWorkoutPerformed)
+	server.DELETE("/workout/:name/:date", handler.DeleteWorkoutPerformed)
 
 	//// Program
-	e.POST("/program", handler.CreateProgram)
-	e.GET("/program", handler.GetProgramNames)
-	e.GET("/program/:name", handler.GetProgram)
+	server.POST("/program", handler.CreateProgram)
+	server.GET("/program", handler.GetProgramNames)
+	server.GET("/program/:name", handler.GetProgram)
 
 	//// Composition
-	e.POST("/composition", handler.SubmitComposition)
-	e.GET("/composition/:date", handler.GetComposition)
-	e.DELETE("/composition/:date ", handler.DeleteComposition)
+	server.POST("/composition", handler.SubmitComposition)
+	server.GET("/composition/:date", handler.GetComposition)
+	server.DELETE("/composition/:date ", handler.DeleteComposition)
 
 	//// Nutrition
-	e.POST("/nutrition", handler.SubmitNutrition)
-	e.GET("/nutrition/:date", handler.GetNutrition)
-	e.DELETE("/nutrition/:date", handler.DeleteNutrition)
+	server.POST("/nutrition", handler.SubmitNutrition)
+	server.GET("/nutrition/:date", handler.GetNutrition)
+	server.DELETE("/nutrition/:date", handler.DeleteNutrition)
 
 	// Start server
-	e.Logger.Fatal(e.Start(":1323"))
+	server.Logger.Fatal(server.Start(":1323"))
 }
