@@ -78,14 +78,6 @@ func GetProgram(c echo.Context) error {
 	return c.JSON(http.StatusOK, program)
 }
 
-// Gets limit from the request query params and converts it to an int32.
-func getLimit (c echo.Context) int32 {
-	limitString := c.QueryParam("limit")
-	limit, _ := strconv.Atoi(limitString)
-
-	return int32(limit)
-}
-
 // Gets a list of program names.
 func GetProgramNames(c echo.Context) error {
 	queries, err := utils.GetQueryInterface()
@@ -93,9 +85,13 @@ func GetProgramNames(c echo.Context) error {
 		return err
 	}
 
+	limit, err := strconv.Atoi(c.QueryParam("limit"))
+	if err != nil {
+		return err
+	}
+
 	ctx := context.Background()
-	limit := getLimit(c)
-	composition, err := queries.GetProgramNames(ctx, limit)
+	composition, err := queries.GetProgramNames(ctx, int32(limit))
 	if err != nil {
 		return err
 	}

@@ -3,7 +3,6 @@ package handler
 import (
 	"context"
 	"fmt"
-	"log"
 	"net/http"
 	"strconv"
 	"time"
@@ -18,18 +17,13 @@ import (
 func GetWorkout(c echo.Context) error {
 	queries, err := utils.GetQueryInterface()
 	if err != nil {
-		log.Fatal(err)
-	}
-	if err != nil {
-		return c.JSON(http.StatusInternalServerError, GenericResponse{fmt.Sprintf("Failed to establish connection to postgres: %s", err)})
+		return err
 	}
 
-	ctx := context.Background()
 	name := c.Param("name")
-
-	workout, err := queries.GetWorkout(ctx, name)
+	workout, err := queries.GetWorkout(context.Background(), name)
 	if err != nil {
-		return c.JSON(http.StatusInternalServerError, GenericResponse{fmt.Sprintf("Failed to get Workout: %s", err)})
+		return err
 	}
 
 	return c.JSON(http.StatusOK, workout)
@@ -39,23 +33,19 @@ func GetWorkout(c echo.Context) error {
 func GetWorkoutPerformed(c echo.Context) error {
 	queries, err := utils.GetQueryInterface()
 	if err != nil {
-		log.Fatal(err)
-	}
-	if err != nil {
-		return c.JSON(http.StatusInternalServerError, GenericResponse{fmt.Sprintf("Failed to establish connection to postgres: %s", err)})
+		return err
 	}
 
-	ctx := context.Background()
-	dateString := c.Param("date")
-	date, err := time.Parse("YYYY-MM-DD", dateString)
+	date, _ := time.Parse("YYYY-MM-DD", c.Param("date"))
 	if err != nil {
-		return c.JSON(http.StatusInternalServerError, GenericResponse{fmt.Sprintf("Failed to parse string to date: %s", err)})
+		return err
 	}
 
-	workoutPerformed, err := queries.GetWorkoutPerformed(ctx, date)
+	workoutPerformed, err := queries.GetWorkoutPerformed(context.Background(), date)
 	if err != nil {
-		return c.JSON(http.StatusInternalServerError, GenericResponse{fmt.Sprintf("Failed to get Workout performed: %s", err)})
+		return err
 	}
+
 	return c.JSON(http.StatusOK, workoutPerformed)
 }
 
@@ -63,23 +53,17 @@ func GetWorkoutPerformed(c echo.Context) error {
 func GetWorkoutNames(c echo.Context) error {
 	queries, err := utils.GetQueryInterface()
 	if err != nil {
-		log.Fatal(err)
-	}
-	if err != nil {
-		return c.JSON(http.StatusInternalServerError, GenericResponse{fmt.Sprintf("Failed to establish connection to postgres: %s", err)})
+		return err
 	}
 
-	ctx := context.Background()
-	limitString := c.QueryParam("limit")
-
-	limit, err := strconv.Atoi(limitString)
+	limit, err := strconv.Atoi(c.QueryParam("limit"))
 	if err != nil {
-		return c.JSON(http.StatusInternalServerError, GenericResponse{fmt.Sprintf("Failed to convert limit to integer: %s", err)})
+		return err
 	}
 
-	workoutNames, err := queries.GetWorkoutNames(ctx, int32(limit))
+	workoutNames, err := queries.GetWorkoutNames(context.Background(), int32(limit))
 	if err != nil {
-		return c.JSON(http.StatusInternalServerError, GenericResponse{fmt.Sprintf("Failed to get Workout names: %s", err)})
+		return err
 	}
 
 	return c.JSON(http.StatusOK, workoutNames)
@@ -89,43 +73,30 @@ func GetWorkoutNames(c echo.Context) error {
 func DeleteWorkout(c echo.Context) error {
 	queries, err := utils.GetQueryInterface()
 	if err != nil {
-		log.Fatal(err)
-	}
-	if err != nil {
-		return c.JSON(http.StatusInternalServerError, GenericResponse{fmt.Sprintf("Failed to establish connection to postgres: %s", err)})
+		return err
 	}
 
-	ctx := context.Background()
-	name := c.Param("name")
-
-	error := queries.DeleteWorkout(ctx, name)
-	if error != nil {
-		return c.JSON(http.StatusInternalServerError, GenericResponse{fmt.Sprintf("Failed to delete Workout: %s", error)})
+	if err := queries.DeleteWorkout(context.Background(), c.Param("name")); err != nil {
+		return err
 	}
 
-	return c.JSON(http.StatusOK, GenericResponse{fmt.Sprintf("Successfully deleted Workout: %s", name)})
+	return c.JSON(http.StatusOK, GenericResponse{fmt.Sprintf("Successfully deleted Workout: %s", c.Param("name"))})
 }
 
-// Delete workout
+// Delete workout performed
 func DeleteWorkoutPerformed(c echo.Context) error {
 	queries, err := utils.GetQueryInterface()
 	if err != nil {
-		log.Fatal(err)
-	}
-	if err != nil {
-		return c.JSON(http.StatusInternalServerError, GenericResponse{fmt.Sprintf("Failed to establish connection to postgres: %s", err)})
+		return err
 	}
 
-	ctx := context.Background()
-	dateString := c.Param("date")
-	date, err := time.Parse("YYYY-MM-DD", dateString)
+	date, err := time.Parse("YYYY-MM-DD", c.Param("date"))
 	if err != nil {
-		return c.JSON(http.StatusInternalServerError, GenericResponse{fmt.Sprintf("Failed to parse string to date: %s", err)})
+		return err
 	}
 
-	error := queries.DeleteWorkoutPerformed(ctx, date)
-	if error != nil {
-		return c.JSON(http.StatusInternalServerError, GenericResponse{fmt.Sprintf("Failed to delete Workout performed: %s", error)})
+	if err := queries.DeleteWorkoutPerformed(context.Background(), date); err != nil {
+		return err
 	}
 
 	return c.JSON(http.StatusOK, GenericResponse{fmt.Sprintf("Successfully deleted Workout performed on: %s", date)})
