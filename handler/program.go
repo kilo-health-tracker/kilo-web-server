@@ -2,35 +2,35 @@ package handler
 
 import (
 	"context"
+	"database/sql"
 	"fmt"
 	"net/http"
 	"strconv"
-	"database/sql"
 
 	"github.com/labstack/echo/v4"
 	_ "github.com/lib/pq"
 
-	"github.com/kilo-health-tracker/kilo-database/utils"
 	"github.com/kilo-health-tracker/kilo-database/models"
+	"github.com/kilo-health-tracker/kilo-database/utils"
 )
 
 // Formats the records returned from GetProgram functions into a Program struct.
 func formatProgramResponse(programRecords []models.GetProgramRow) Program {
-	program := Program {
-		Name: programRecords[0].Name,
-		Workouts: []Workout {},
+	program := Program{
+		Name:     programRecords[0].Name,
+		Workouts: []Workout{},
 	}
 
 	for _, record := range programRecords {
-		workout := Workout {
+		workout := Workout{
 			Name: record.Name_2,
-			Exercises: []Exercise {
+			Exercises: []Exercise{
 				{
-					Name: record.ExerciseName,
+					Name:    record.ExerciseName,
 					GroupId: record.GroupID,
-					Sets: record.Sets,
-					Reps: record.Reps,
-					Weight: record.Weight.Int16,
+					Sets:    record.Sets,
+					Reps:    record.Reps,
+					Weight:  record.Weight.Int16,
 				},
 			},
 		}
@@ -42,20 +42,20 @@ func formatProgramResponse(programRecords []models.GetProgramRow) Program {
 }
 
 type Exercise struct {
-	Name string `json:"name"`
-	GroupId int16 `json:"group_id"`
-	Sets int16 `json:"sets"`
-	Reps int16 `json:"reps"`
-	Weight int16 `json:"weight"`
+	Name    string `json:"name"`
+	GroupId int16  `json:"group_id"`
+	Sets    int16  `json:"sets"`
+	Reps    int16  `json:"reps"`
+	Weight  int16  `json:"weight"`
 }
 
 type Workout struct {
-	Name string `json:"name"`
+	Name      string     `json:"name"`
 	Exercises []Exercise `json:"exercises"`
 }
 
 type Program struct {
-	Name string `json:"name"`
+	Name     string    `json:"name"`
 	Workouts []Workout `json:"workouts"`
 }
 
@@ -119,7 +119,7 @@ func DeleteProgram(c echo.Context) error {
 // Submits a list of exercises tied to a given workout.
 func submitExercises(workoutName string, exercises []Exercise, ctx context.Context, queries *models.Queries) error {
 	for _, exercise := range exercises {
-		details := models.SubmitWorkoutDetailsParams {
+		details := models.SubmitWorkoutDetailsParams{
 			WorkoutName:  workoutName,
 			GroupID:      exercise.GroupId,
 			ExerciseName: exercise.Name,

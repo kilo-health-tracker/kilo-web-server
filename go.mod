@@ -6,7 +6,6 @@ require (
 	github.com/kilo-health-tracker/kilo-database v0.0.0-20230220013537-56aebea6da67
 	github.com/labstack/echo/v4 v4.10.0
 	github.com/lib/pq v1.10.7
-	github.com/tidwall/gjson v1.14.4
 )
 
 require (
@@ -15,8 +14,6 @@ require (
 	github.com/mattn/go-colorable v0.1.13 // indirect
 	github.com/mattn/go-isatty v0.0.16 // indirect
 	github.com/tabbed/pqtype v0.1.1 // indirect
-	github.com/tidwall/match v1.1.1 // indirect
-	github.com/tidwall/pretty v1.2.0 // indirect
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
 	github.com/valyala/fasttemplate v1.2.2 // indirect
 	golang.org/x/crypto v0.2.0 // indirect
