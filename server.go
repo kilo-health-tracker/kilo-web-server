@@ -37,6 +37,7 @@ func main() {
 	server.GET("/workout", handler.GetWorkoutNames)
 	server.DELETE("/workout/:name", handler.DeleteWorkout)
 	server.GET("/workout/:name", handler.GetWorkout)
+	server.POST("/workout", handler.SubmitWorkoutPerformed)
 	server.GET("/workout/:name/:date", handler.GetWorkoutPerformed)
 	server.DELETE("/workout/:name/:date", handler.DeleteWorkoutPerformed)
 
