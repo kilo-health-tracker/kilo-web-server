@@ -15,6 +15,34 @@ import (
 	"github.com/kilo-health-tracker/kilo-database/models"
 )
 
+type GetProgramRow struct {
+	Name         string        `json:"name"`
+	Name_2       string        `json:"name2"`
+	GroupID      int16         `json:"groupID"`
+	ExerciseName string        `json:"exerciseName"`
+	Weight       sql.NullInt16 `json:"weight"`
+	Sets         int16         `json:"sets"`
+	Reps         int16         `json:"reps"`
+}
+
+type Exercise struct {
+	Name string `json:"name"`
+	GroupId int16 `json:"group_id"`
+	Sets int16 `json:"sets"`
+	Reps int16 `json:"reps"`
+	Weight int16 `json:"weight"`
+}
+
+type Workout struct {
+	Name string `json:"name"`
+	Exercises []Exercise `json:"exercises"`
+}
+
+type Program struct {
+	Name string `json:"name"`
+	Workouts []Workout `json:"workouts"`
+}
+
 // Get Program
 func GetProgram(c echo.Context) error {
 	queries, err := utils.GetQueryInterface()
@@ -28,12 +56,35 @@ func GetProgram(c echo.Context) error {
 	ctx := context.Background()
 	name := c.Param("name")
 
-	composition, err := queries.GetProgram(ctx, name)
+	programRecords, err := queries.GetProgram(ctx, name)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, GenericResponse{fmt.Sprintf("Failed to get Program: %s", err)})
 	}
+	log.Println(programRecords)
 
-	return c.JSON(http.StatusOK, composition)
+	program := Program {
+		Name: programRecords[0].Name,
+		Workouts: []Workout {},
+	}
+
+	for _, record := range programRecords {
+		workout := Workout {
+			Name: record.Name_2,
+			Exercises: []Exercise {
+				{
+					Name: record.ExerciseName,
+					GroupId: record.GroupID,
+					Sets: record.Sets,
+					Reps: record.Reps,
+					Weight: record.Weight.Int16,
+				},
+			},
+		}
+
+		program.Workouts = append(program.Workouts, workout)
+	}
+
+	return c.JSON(http.StatusOK, program)
 }
 
 // Get Program names
@@ -81,25 +132,6 @@ func DeleteProgram(c echo.Context) error {
 
 	return c.JSON(http.StatusOK, GenericResponse{fmt.Sprintf("Successfully deleted Program: %s", name)})
 }
-
-type Exercise struct {
-	Name string `json:"name"`
-	GroupId int16 `json:"group_id"`
-	Sets int16 `json:"sets"`
-	Reps int16 `json:"reps"`
-	Weight int16 `json:"weight"`
-}
-
-type Workout struct {
-	Name string `json:"name"`
-	Exercises []Exercise `json:"exercises"`
-}
-
-type Program struct {
-	Name string `json:"name"`
-	Workouts []Workout `json:"workouts"`
-}
-
 
 func CreateProgram(c echo.Context) error {
 	var requestBody Program
