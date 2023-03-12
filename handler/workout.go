@@ -20,8 +20,7 @@ func GetWorkout(c echo.Context) error {
 		return err
 	}
 
-	name := c.Param("name")
-	workout, err := queries.GetWorkout(context.Background(), name)
+	workout, err := queries.GetWorkout(context.Background(), c.Param("name"))
 	if err != nil {
 		return err
 	}
@@ -36,7 +35,7 @@ func GetWorkoutPerformed(c echo.Context) error {
 		return err
 	}
 
-	date, _ := time.Parse("YYYY-MM-DD", c.Param("date"))
+	date, err := time.Parse("YYYY-MM-DD", c.Param("date"))
 	if err != nil {
 		return err
 	}
