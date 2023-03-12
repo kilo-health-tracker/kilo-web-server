@@ -3,7 +3,6 @@ package handler
 import (
 	"context"
 	"fmt"
-	"log"
 	"net/http"
 
 	"github.com/labstack/echo/v4"
@@ -18,20 +17,15 @@ func SubmitNutrition(c echo.Context) error {
 	var requestBody models.SubmitNutritionParams
 	queries, err := utils.GetQueryInterface()
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
-	if err != nil {
-		return c.JSON(http.StatusInternalServerError, GenericResponse{fmt.Sprintf("Failed to establish connection to postgres: %s", err)})
-	}
-
-	ctx := context.Background()
 
 	// bind request body to variable given
 	if err := c.Bind(&requestBody); err != nil {
-		return c.JSON(http.StatusInternalServerError, GenericResponse{fmt.Sprintf("Failed to bind request body to Nutrition type: %s", err)})
+		return err
 	}
 
-	nutrition, err := queries.SubmitNutrition(ctx, requestBody)
+	nutrition, err := queries.SubmitNutrition(context.Background(), requestBody)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, GenericResponse{fmt.Sprintf("Failed to post Nutrition entry: %s", err)})
 	}
@@ -43,18 +37,12 @@ func SubmitNutrition(c echo.Context) error {
 func GetNutrition(c echo.Context) error {
 	queries, err := utils.GetQueryInterface()
 	if err != nil {
-		log.Fatal(err)
-	}
-	if err != nil {
-		return c.JSON(http.StatusInternalServerError, GenericResponse{fmt.Sprintf("Failed to establish connection to postgres: %s", err)})
+		return err
 	}
 
-	ctx := context.Background()
-	date := c.Param("date")
-
-	nutrition, err := queries.GetNutrition(ctx, date)
+	nutrition, err := queries.GetNutrition(context.Background(), c.Param("date"))
 	if err != nil {
-		return c.JSON(http.StatusInternalServerError, GenericResponse{fmt.Sprintf("Failed to get Nutrition entry: %s", err)})
+		return err
 	}
 
 	return c.JSON(http.StatusOK, nutrition)
@@ -64,19 +52,12 @@ func GetNutrition(c echo.Context) error {
 func DeleteNutrition(c echo.Context) error {
 	queries, err := utils.GetQueryInterface()
 	if err != nil {
-		log.Fatal(err)
-	}
-	if err != nil {
-		return c.JSON(http.StatusInternalServerError, GenericResponse{fmt.Sprintf("Failed to establish connection to postgres: %s", err)})
+		return err
 	}
 
-	ctx := context.Background()
-	date := c.Param("date")
-
-	error := queries.DeleteNutrition(ctx, date)
-	if error != nil {
-		return c.JSON(http.StatusInternalServerError, GenericResponse{fmt.Sprintf("Failed to delete Nutrition entry: %s", error)})
+	if err := queries.DeleteNutrition(context.Background(), c.Param("date")); err != nil {
+		return err
 	}
 
-	return c.JSON(http.StatusOK, GenericResponse{fmt.Sprintf("Successfully deleted Nutrition entry submitted on: %s", date)})
+	return c.JSON(http.StatusOK, GenericResponse{fmt.Sprintf("Successfully deleted Nutrition entry submitted on: %s", c.Param("date"))})
 }

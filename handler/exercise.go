@@ -3,7 +3,6 @@ package handler
 import (
 	"context"
 	"fmt"
-	"log"
 	"net/http"
 	"strconv"
 
@@ -17,18 +16,12 @@ import (
 func GetExercise(c echo.Context) error {
 	queries, err := utils.GetQueryInterface()
 	if err != nil {
-		log.Fatal(err)
-	}
-	if err != nil {
-		return c.JSON(http.StatusInternalServerError, GenericResponse{fmt.Sprintf("Failed to establish connection to postgres: %s", err)})
+		return err
 	}
 
-	ctx := context.Background()
-	name := c.Param("name")
-
-	exercise, err := queries.GetExercise(ctx, name)
+	exercise, err := queries.GetExercise(context.Background(), c.Param("name"))
 	if err != nil {
-		return c.JSON(http.StatusInternalServerError, GenericResponse{fmt.Sprintf("Failed to get Exercise: %s", err)})
+		return err
 	}
 
 	return c.JSON(http.StatusOK, exercise)
@@ -38,23 +31,17 @@ func GetExercise(c echo.Context) error {
 func GetExerciseNames(c echo.Context) error {
 	queries, err := utils.GetQueryInterface()
 	if err != nil {
-		log.Fatal(err)
-	}
-	if err != nil {
-		return c.JSON(http.StatusInternalServerError, GenericResponse{fmt.Sprintf("Failed to establish connection to postgres: %s", err)})
+		return err
 	}
 
-	ctx := context.Background()
-	limitString := c.QueryParam("limit")
-
-	limit, err := strconv.Atoi(limitString)
+	limit, err := strconv.Atoi(c.QueryParam("limit"))
 	if err != nil {
-		return c.JSON(http.StatusInternalServerError, GenericResponse{fmt.Sprintf("Failed to convert limit to integer: %s", err)})
+		return err
 	}
 
-	exerciseNames, err := queries.GetExercises(ctx, int32(limit))
+	exerciseNames, err := queries.GetExercises(context.Background(), int32(limit))
 	if err != nil {
-		return c.JSON(http.StatusInternalServerError, GenericResponse{fmt.Sprintf("Failed to get Exercise names: %s", err)})
+		return err
 	}
 
 	return c.JSON(http.StatusOK, exerciseNames)
@@ -64,19 +51,12 @@ func GetExerciseNames(c echo.Context) error {
 func DeleteExercise(c echo.Context) error {
 	queries, err := utils.GetQueryInterface()
 	if err != nil {
-		log.Fatal(err)
-	}
-	if err != nil {
-		return c.JSON(http.StatusInternalServerError, GenericResponse{fmt.Sprintf("Failed to establish connection to postgres: %s", err)})
+		return err
 	}
 
-	ctx := context.Background()
-	name := c.Param("name")
-
-	error := queries.DeleteExercise(ctx, name)
-	if error != nil {
-		return c.JSON(http.StatusInternalServerError, GenericResponse{fmt.Sprintf("Failed to delete Exercise: %s", error)})
+	if err := queries.DeleteExercise(context.Background(), c.Param("name")); err != nil {
+		return err
 	}
 
-	return c.JSON(http.StatusOK, GenericResponse{fmt.Sprintf("Successfully deleted Exercise: %s", name)})
+	return c.JSON(http.StatusOK, GenericResponse{fmt.Sprintf("Successfully deleted Exercise: %s", c.Param("name"))})
 }

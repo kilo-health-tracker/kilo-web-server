@@ -3,7 +3,6 @@ package handler
 import (
 	"context"
 	"fmt"
-	"log"
 	"net/http"
 
 	"github.com/labstack/echo/v4"
@@ -22,22 +21,17 @@ func SubmitComposition(c echo.Context) error {
 	var requestBody models.SubmitCompositionParams
 	queries, err := utils.GetQueryInterface()
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
-	if err != nil {
-		return c.JSON(http.StatusInternalServerError, GenericResponse{fmt.Sprintf("Failed to establish connection to postgres: %s", err)})
-	}
-
-	ctx := context.Background()
 
 	// bind request body to variable given
 	if err := c.Bind(&requestBody); err != nil {
-		return c.JSON(http.StatusInternalServerError, GenericResponse{fmt.Sprintf("Failed to bind request body to composition type: %s", err)})
+		return err
 	}
 
-	composition, err := queries.SubmitComposition(ctx, requestBody)
+	composition, err := queries.SubmitComposition(context.Background(), requestBody)
 	if err != nil {
-		return c.JSON(http.StatusInternalServerError, GenericResponse{fmt.Sprintf("Failed to post composition details: %s", err)})
+		return err
 	}
 
 	return c.JSON(http.StatusOK, composition)
@@ -47,18 +41,12 @@ func SubmitComposition(c echo.Context) error {
 func GetComposition(c echo.Context) error {
 	queries, err := utils.GetQueryInterface()
 	if err != nil {
-		log.Fatal(err)
-	}
-	if err != nil {
-		return c.JSON(http.StatusInternalServerError, GenericResponse{fmt.Sprintf("Failed to establish connection to postgres: %s", err)})
+		return err
 	}
 
-	ctx := context.Background()
-	date := c.Param("date")
-
-	composition, err := queries.GetComposition(ctx, date)
+	composition, err := queries.GetComposition(context.Background(), c.Param("date"))
 	if err != nil {
-		return c.JSON(http.StatusInternalServerError, GenericResponse{fmt.Sprintf("Failed to get composition details: %s", err)})
+		return err
 	}
 
 	return c.JSON(http.StatusOK, composition)
@@ -68,19 +56,12 @@ func GetComposition(c echo.Context) error {
 func DeleteComposition(c echo.Context) error {
 	queries, err := utils.GetQueryInterface()
 	if err != nil {
-		log.Fatal(err)
-	}
-	if err != nil {
-		return c.JSON(http.StatusInternalServerError, GenericResponse{fmt.Sprintf("Failed to establish connection to postgres: %s", err)})
+		return err
 	}
 
-	ctx := context.Background()
-	date := c.Param("date")
-
-	error := queries.DeleteComposition(ctx, date)
-	if error != nil {
-		return c.JSON(http.StatusInternalServerError, GenericResponse{fmt.Sprintf("Failed to delete composition: %s", error)})
+	if err := queries.DeleteComposition(context.Background(), c.Param("date")); err != nil {
+		return err
 	}
 
-	return c.JSON(http.StatusOK, GenericResponse{fmt.Sprintf("Successfully deleted Composition submitted on: %s", date)})
+	return c.JSON(http.StatusOK, GenericResponse{fmt.Sprintf("Successfully deleted Composition submitted on: %s", c.Param("date"))})
 }
