@@ -17,13 +17,13 @@ import (
 // Formats the records returned from GetProgram functions into a Program struct.
 func formatProgramResponse(programRecords []models.GetProgramRow) Program {
 	program := Program{
-		Name:     programRecords[0].Name,
+		Name:     programRecords[0].ProgramName,
 		Workouts: []Workout{},
 	}
 
 	for _, record := range programRecords {
 		workout := Workout{
-			Name: record.Name_2,
+			Name: record.WorkoutName,
 			Exercises: []Exercise{
 				{
 					Name:    record.ExerciseName,

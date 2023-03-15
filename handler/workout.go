@@ -15,6 +15,42 @@ import (
 	"github.com/kilo-health-tracker/kilo-database/utils"
 )
 
+// Formats the records returned from GetWorkoutPerformed functions into a WorkoutPerformed struct.
+func formatGetWorkoutPerformedResponse(workoutPerformedRecords []models.GetWorkoutPerformedRow) WorkoutPerformed {
+	workoutPerformed := WorkoutPerformed {
+		Name: workoutPerformedRecords[0].WorkoutName,
+		Date: workoutPerformedRecords[0].SubmittedOn.String(),
+		Groups: []Group{},
+	}
+
+	groupMap := make(map[int][]ExercisePerformed)
+
+	for _, record := range workoutPerformedRecords {
+		exercisePerformed := ExercisePerformed {
+			Name: record.ExerciseName,
+			Weight: record.Weight,
+			Reps: record.Reps,
+			RIR: record.RepsInReserve.String,
+		}
+		
+		groupMap[int(record.GroupID)] = append(groupMap[int(record.GroupID)], exercisePerformed)
+		fmt.Println(groupMap[int(record.GroupID)])
+		
+	}
+
+	for id, _ := range groupMap {
+		group := Group {
+			ID: int16(id),
+			SetsPerformed: [][]ExercisePerformed{},
+		}
+		group.SetsPerformed = append(group.SetsPerformed, groupMap[int(id)])
+		workoutPerformed.Groups = append(workoutPerformed.Groups, group)
+		fmt.Println(workoutPerformed)
+	}
+
+	return workoutPerformed
+}
+
 // Get workout
 func GetWorkout(c echo.Context) error {
 	queries, err := utils.GetQueryInterface()
@@ -37,15 +73,17 @@ func GetWorkoutPerformed(c echo.Context) error {
 		return err
 	}
 
-	date, err := time.Parse("YYYY-MM-DD", c.Param("date"))
+	date, err := time.Parse("2006-01-02", c.Param("date"))
 	if err != nil {
 		return err
 	}
 
-	workoutPerformed, err := queries.GetWorkoutPerformed(context.Background(), date)
+	workoutPerformedRecords, err := queries.GetWorkoutPerformed(context.Background(), date)
 	if err != nil {
 		return err
 	}
+
+	workoutPerformed := formatGetWorkoutPerformedResponse(workoutPerformedRecords)
 
 	return c.JSON(http.StatusOK, workoutPerformed)
 }
@@ -91,7 +129,7 @@ func DeleteWorkoutPerformed(c echo.Context) error {
 		return err
 	}
 
-	date, err := time.Parse("YYYY-MM-DD", c.Param("date"))
+	date, err := time.Parse("2006-01-02", c.Param("date"))
 	if err != nil {
 		return err
 	}
@@ -103,22 +141,16 @@ func DeleteWorkoutPerformed(c echo.Context) error {
 	return c.JSON(http.StatusOK, GenericResponse{fmt.Sprintf("Successfully deleted Workout performed on: %s", date)})
 }
 
-
-
 type ExercisePerformed struct {
 	Name   string `json:"name"`
 	Weight int16  `json:"weight"`
 	Reps   int16  `json:"reps"`
-	RIR    int16  `json:"rir"`
-}
-
-type SetPerformed struct {
-	ExercisesPerformed []ExercisePerformed
+	RIR    string `json:"rir"`
 }
 
 type Group struct {
-	ID                 int16               `json:"id"`
-	SetsPerformed []SetPerformed `json:"sets"`
+	ID            int16                 `json:"id"`
+	SetsPerformed [][]ExercisePerformed `json:"sets"`
 }
 
 type WorkoutPerformed struct {
@@ -127,43 +159,34 @@ type WorkoutPerformed struct {
 	Groups []Group `json:"groups"`
 }
 
-// Submits a list of exercises tied to a given workout.
-func createExercisesPerformed(setID int32, sets []SetPerformed, ctx context.Context, queries *models.Queries) error {
-	for index, set := range sets {
-		for _, exercise := range set.ExercisesPerformed {
-			details := models.SubmitExercisePerformedParams {
-				SetID: setID,
-				ExerciseName: exercise.Name,
-				Reps: exercise.Reps,
-				Weight: exercise.Weight,
-				RepsInReserve: sql.NullInt16{Int16: exercise.Weight, Valid: true},
-			}
-	
-			if _, err := queries.SubmitExercisePerformed(ctx, details); err != nil {
-				return err
-			}
-		}
-	}
-
-	return nil
-}
-
-
 // Submits a list of workouts tied to the given program.
 func createSetsPerformed(ctx context.Context, groups []Group, queries *models.Queries, workoutID int32) error {
 	for _, group := range groups {
-		setParams := models.SubmitSetPerformedParams{
-			WorkoutID:	workoutID,
-			GroupID: 	group.ID,
-		}
+		for index, set := range group.SetsPerformed {
+			setParams := models.SubmitSetPerformedParams{
+				WorkoutID: workoutID,
+				GroupID:   group.ID,
+				SetNumber: int16(index+1),
+			}
 
-		response, err := queries.SubmitSetPerformed(ctx, setParams)
-		if err != nil {
-			return err
-		}
+			response, err := queries.SubmitSetPerformed(ctx, setParams)
+			if err != nil {
+				return err
+			}
 
-		if err := createExercisesPerformed(response.ID, group.SetsPerformed, ctx, queries); err != nil {
-			return err
+			for _, exercise := range set {
+				details := models.SubmitExercisePerformedParams{
+					SetID:         response.ID,
+					ExerciseName:  exercise.Name,
+					Reps:          exercise.Reps,
+					Weight:        exercise.Weight,
+					RepsInReserve: sql.NullString{String: exercise.RIR, Valid: true},
+				}
+
+				if _, err := queries.SubmitExercisePerformed(ctx, details); err != nil {
+					return err
+				}
+			}
 		}
 	}
 
@@ -173,12 +196,12 @@ func createSetsPerformed(ctx context.Context, groups []Group, queries *models.Qu
 func createWorkoutPerformed(requestBody WorkoutPerformed, queries *models.Queries) error {
 	ctx := context.Background()
 
-	date, err := time.Parse("YYYY-MM-DD", requestBody.Date)
+	date, err := time.Parse("2006-01-02", requestBody.Date)
 	if err != nil {
 		return err
 	}
 
-	workoutPerformedDetails := models.SubmitWorkoutPerformedParams {
+	workoutPerformedDetails := models.SubmitWorkoutPerformedParams{
 		SubmittedOn: date,
 		WorkoutName: requestBody.Name,
 	}
@@ -195,7 +218,7 @@ func createWorkoutPerformed(requestBody WorkoutPerformed, queries *models.Querie
 }
 
 // Submit workout performed
-func SubmitWorkoutPerfomed(c echo.Context) error {
+func SubmitWorkoutPerformed(c echo.Context) error {
 	var requestBody WorkoutPerformed
 	queries, err := utils.GetQueryInterface()
 	if err != nil {
@@ -210,6 +233,6 @@ func SubmitWorkoutPerfomed(c echo.Context) error {
 		return err
 	}
 
-	return c.JSON(http.StatusOK, GenericResponse{fmt.Sprintf("Successfully created Program: %s", requestBody.Name)})
+	return c.JSON(http.StatusOK, GenericResponse{fmt.Sprintf("Successfully submitted %s workout performed on %s", requestBody.Name, requestBody.Date)})
 
 }
