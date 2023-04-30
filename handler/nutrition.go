@@ -8,8 +8,8 @@ import (
 	"github.com/labstack/echo/v4"
 	_ "github.com/lib/pq"
 
-	"github.com/kilo-health-tracker/kilo-database/models"
-	"github.com/kilo-health-tracker/kilo-database/utils"
+	"github.com/kilo-health-tracker/kilo-web-server/models"
+	"github.com/kilo-health-tracker/kilo-web-server/utils"
 )
 
 // Submit nutrition entry

@@ -29,32 +29,33 @@ func main() {
 
 	// Route => handler
 	//// Exercise
-	server.GET("/exercise", handler.GetExerciseNames)
-	server.GET("/exercise/:name", handler.GetExercise)
-	server.DELETE("/exercise/:name", handler.DeleteExercise)
+	api := server.Group("/api")
+	api.GET("/exercise", handler.GetExerciseNames)
+	api.GET("/exercise/:name", handler.GetExercise)
+	api.DELETE("/exercise/:name", handler.DeleteExercise)
 
 	//// Workout
-	server.GET("/workout", handler.GetWorkoutNames)
-	server.DELETE("/workout/:name", handler.DeleteWorkout)
-	server.GET("/workout/:name", handler.GetWorkout)
-	server.POST("/workout", handler.SubmitWorkoutPerformed)
-	server.GET("/workout/:name/:date", handler.GetWorkoutPerformed)
-	server.DELETE("/workout/:name/:date", handler.DeleteWorkoutPerformed)
+	api.GET("/workout", handler.GetWorkoutNames)
+	api.DELETE("/workout/:name", handler.DeleteWorkout)
+	api.GET("/workout/:name", handler.GetWorkout)
+	api.POST("/workout", handler.SubmitWorkoutPerformed)
+	api.GET("/workout/:name/:date", handler.GetWorkoutPerformed)
+	api.DELETE("/workout/:name/:date", handler.DeleteWorkoutPerformed)
 
 	//// Program
-	server.POST("/program", handler.CreateProgram)
-	server.GET("/program", handler.GetProgramNames)
-	server.GET("/program/:name", handler.GetProgram)
+	api.POST("/program", handler.CreateProgram)
+	api.GET("/program", handler.GetProgramNames)
+	api.GET("/program/:name", handler.GetProgram)
 
 	//// Composition
-	server.POST("/composition", handler.SubmitComposition)
-	server.GET("/composition/:date", handler.GetComposition)
-	server.DELETE("/composition/:date ", handler.DeleteComposition)
+	api.POST("/composition", handler.SubmitComposition)
+	api.GET("/composition/:date", handler.GetComposition)
+	api.DELETE("/composition/:date ", handler.DeleteComposition)
 
 	//// Nutrition
-	server.POST("/nutrition", handler.SubmitNutrition)
-	server.GET("/nutrition/:date", handler.GetNutrition)
-	server.DELETE("/nutrition/:date", handler.DeleteNutrition)
+	api.POST("/nutrition", handler.SubmitNutrition)
+	api.GET("/nutrition/:date", handler.GetNutrition)
+	api.DELETE("/nutrition/:date", handler.DeleteNutrition)
 
 	// Start server
 	server.Logger.Fatal(server.Start(":1323"))

@@ -4,4 +4,6 @@ WORKDIR /usr/src/app
 
 COPY . .
 RUN go mod tidy
-CMD go run server.go -b 0.0.0.0
+RUN go build -o server.exe
+
+CMD ./server.exe

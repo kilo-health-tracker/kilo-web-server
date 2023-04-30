@@ -3,7 +3,6 @@ module github.com/kilo-health-tracker/kilo-web-server
 go 1.19
 
 require (
-	github.com/kilo-health-tracker/kilo-database v0.0.6
 	github.com/labstack/echo/v4 v4.10.2
 	github.com/lib/pq v1.10.7
 )
