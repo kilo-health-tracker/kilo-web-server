@@ -57,8 +57,9 @@ func main() {
 	api.GET("/nutrition/:date", handler.GetNutrition)
 	api.DELETE("/nutrition/:date", handler.DeleteNutrition)
 
-	//// Training
-	api.GET("/training", handler.GetTrainingWeight)
+	//// Training Calculations Table
+	api.GET("/training/weight", handler.GetTrainingWeight)
+	api.GET("/training/max", handler.GetTrainingMax)
 
 	// Start server
 	server.Logger.Fatal(server.Start(":1323"))

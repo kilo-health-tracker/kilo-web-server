@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 	"os"
+	"math"
 
 	_ "github.com/lib/pq"
 
@@ -65,4 +66,9 @@ func GetWeightTable() [][]float64 {
 	}
 
 	return table
+}
+
+// For 2 decimal places, need to multiple by 100, round to the nearest integer, then divide by 100... annoying.
+func RoundFloatToTwoPlaces(n float64) float64 {
+	return math.Round(n*100)/100
 }
