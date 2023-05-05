@@ -28,9 +28,11 @@ func main() {
 	}
 
 	// Route => handler
-	//// Exercise
 	api := server.Group("/api")
+
+	//// Exercise
 	api.GET("/exercise", handler.GetExerciseNames)
+	api.POST("/exercise", handler.SubmitExercise)
 	api.GET("/exercise/:name", handler.GetExercise)
 	api.DELETE("/exercise/:name", handler.DeleteExercise)
 
@@ -56,6 +58,11 @@ func main() {
 	api.POST("/nutrition", handler.SubmitNutrition)
 	api.GET("/nutrition/:date", handler.GetNutrition)
 	api.DELETE("/nutrition/:date", handler.DeleteNutrition)
+
+	//// Body Parts
+	api.POST("/bp", handler.SubmitBodyPart)
+	//api.GET("/bp/:name", handler.GetBodyPart)
+	//api.DELETE("/bp/:name", handler.DeleteBodyPart)
 
 	//// Training Calculations Table
 	api.GET("/training/weight", handler.GetTrainingWeight)

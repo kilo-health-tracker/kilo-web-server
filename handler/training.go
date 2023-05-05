@@ -11,14 +11,9 @@ import (
 	"github.com/kilo-health-tracker/kilo-web-server/utils"
 )
 
-type TrainingWeight struct {
+type TrainingResponse struct {
 	Percentage float64 `json:"percentage"`
-	TrainingWeight float64 `json:"trainingWeight"`
-}
-
-type TrainingMax struct {
-	Percentage float64 `json:"percentage"`
-	TrainingMax float64 `json:"trainingMax"`
+	Weight float64 `json:"weight"`
 }
 
 // Calculate training max given reps, rir, and weight
@@ -44,7 +39,7 @@ func GetTrainingMax(c echo.Context) error {
 	fmt.Printf("Percentage: %v", percentage*100)
 	fmt.Printf("\nTraining Max: %v", trainingMax)
 
-	response := TrainingMax {
+	response := TrainingResponse {
 		utils.RoundFloatToTwoPlaces(percentage*100), 
 		utils.RoundFloatToTwoPlaces(weight/percentage),
 	}
@@ -75,7 +70,7 @@ func GetTrainingWeight(c echo.Context) error {
 	fmt.Printf("Percentage: %v", percentage*100)
 	fmt.Printf("\nTraining Weight: %v", trainingWeight)
 
-	response := TrainingWeight {
+	response := TrainingResponse {
 		utils.RoundFloatToTwoPlaces(percentage*100), 
 		utils.RoundFloatToTwoPlaces(weight*percentage),
 	}

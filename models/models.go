@@ -14,8 +14,8 @@ type TrackerBodyPart struct {
 	Name         string    `json:"name"`
 	Region       string    `json:"region"`
 	UpperOrLower string    `json:"upperOrLower"`
-	CretTs       time.Time `json:"cretTs"`
-	UpdtTs       time.Time `json:"updtTs"`
+	CretTs       time.Time `json:"-"`
+	UpdtTs       time.Time `json:"-"`
 }
 
 type TrackerComposition struct {
@@ -44,16 +44,16 @@ type TrackerExercise struct {
 	Name      string         `json:"name"`
 	Type      NullString `json:"type"`
 	Variation NullString `json:"variation"`
-	CretTs    time.Time      `json:"cretTs"`
-	UpdtTs    time.Time      `json:"updtTs"`
+	CretTs    time.Time      `json:"-"`
+	UpdtTs    time.Time      `json:"-"`
 }
 
 type TrackerExerciseDetail struct {
 	ExerciseName string    `json:"exerciseName"`
 	BodyPart     string    `json:"bodyPart"`
 	Level        string    `json:"level"`
-	CretTs       time.Time `json:"cretTs"`
-	UpdtTs       time.Time `json:"updtTs"`
+	CretTs       time.Time `json:"-"`
+	UpdtTs       time.Time `json:"-"`
 }
 
 type TrackerExercisePerformed struct {
@@ -63,8 +63,8 @@ type TrackerExercisePerformed struct {
 	Reps          int16          `json:"reps"`
 	Weight        int16          `json:"weight"`
 	RepsInReserve NullString `json:"repsInReserve"`
-	CretTs        time.Time      `json:"cretTs"`
-	UpdtTs        time.Time      `json:"updtTs"`
+	CretTs        time.Time      `json:"-"`
+	UpdtTs        time.Time      `json:"-"`
 }
 
 type TrackerNutrition struct {
@@ -74,21 +74,21 @@ type TrackerNutrition struct {
 	Carbohydrate   NullInt16         `json:"carbohydrate"`
 	Fat            NullInt16         `json:"fat"`
 	Micronutrients pqtype.NullRawMessage `json:"micronutrients"`
-	CretTs         time.Time             `json:"cretTs"`
-	UpdtTs         time.Time             `json:"updtTs"`
+	CretTs         time.Time             `json:"-"`
+	UpdtTs         time.Time             `json:"-"`
 }
 
 type TrackerProgram struct {
 	Name   string    `json:"name"`
-	CretTs time.Time `json:"cretTs"`
-	UpdtTs time.Time `json:"updtTs"`
+	CretTs time.Time `json:"-"`
+	UpdtTs time.Time `json:"-"`
 }
 
 type TrackerProgramDetail struct {
 	ProgramName string    `json:"programName"`
 	WorkoutName string    `json:"workoutName"`
-	CretTs      time.Time `json:"cretTs"`
-	UpdtTs      time.Time `json:"updtTs"`
+	CretTs      time.Time `json:"-"`
+	UpdtTs      time.Time `json:"-"`
 }
 
 type TrackerSetPerformed struct {
@@ -96,15 +96,15 @@ type TrackerSetPerformed struct {
 	SetNumber int16     `json:"setNumber"`
 	WorkoutID int32     `json:"workoutID"`
 	GroupID   int16     `json:"groupID"`
-	CretTs    time.Time `json:"cretTs"`
-	UpdtTs    time.Time `json:"updtTs"`
+	CretTs    time.Time `json:"-"`
+	UpdtTs    time.Time `json:"-"`
 }
 
 type TrackerWorkout struct {
 	Name        string    `json:"name"`
 	ProgramName string    `json:"programName"`
-	CretTs      time.Time `json:"cretTs"`
-	UpdtTs      time.Time `json:"updtTs"`
+	CretTs      time.Time `json:"-"`
+	UpdtTs      time.Time `json:"-"`
 }
 
 type TrackerWorkoutDetail struct {
@@ -114,14 +114,14 @@ type TrackerWorkoutDetail struct {
 	Sets         int16         `json:"sets"`
 	Reps         int16         `json:"reps"`
 	Weight       NullInt16 `json:"weight"`
-	CretTs       time.Time     `json:"cretTs"`
-	UpdtTs       time.Time     `json:"updtTs"`
+	CretTs       time.Time     `json:"-"`
+	UpdtTs       time.Time     `json:"-"`
 }
 
 type TrackerWorkoutPerformed struct {
 	ID          int32     `json:"id"`
 	SubmittedOn time.Time `json:"submittedOn"`
 	WorkoutName string    `json:"workoutName"`
-	CretTs      time.Time `json:"cretTs"`
-	UpdtTs      time.Time `json:"updtTs"`
+	CretTs      time.Time `json:"-"`
+	UpdtTs      time.Time `json:"-"`
 }
